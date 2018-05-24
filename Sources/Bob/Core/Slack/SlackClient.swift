@@ -47,7 +47,7 @@ class SlackClient {
         self.droplet = droplet
     }
     
-    func connect(onMessage: @escaping (_ message: String, _ sender: MessageSender) -> Void) throws {
+    func connect(onMessage: @escaping (_ user: String, _ message: String, _ sender: MessageSender) -> Void) throws {
         
         let rtmResponse = try self.droplet.client.loadRealtimeApi(token: self.token)
         guard let webSocketURL = rtmResponse.json?["url"]?.string else { throw "Unable to retrieve `url` from slack. Reason \(rtmResponse.status.reasonPhrase). Raw response \(rtmResponse.data)" }
@@ -61,13 +61,14 @@ class SlackClient {
                 let event = try JSON(bytes: text.utf8.array)
                 
                 guard
+                    let user = event["user"]?.string,
                     let channel = event["channel"]?.string,
                     let text = event["text"]?.string
                     else { return }
                 
                 let sender = SlackMessageSender(socket: socket, channel: channel)
                 
-                onMessage(text, sender)
+                onMessage(user, text, sender)
             }
             
             socket.onClose = { _ in

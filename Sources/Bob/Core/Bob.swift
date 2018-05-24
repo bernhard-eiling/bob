@@ -68,7 +68,7 @@ public class Bob {
     ///
     /// - Throws: Throws an error if it occurs
     public func start() throws {
-        try self.slackClient.connect { (message, sender) in
+        try self.slackClient.connect { (user, message, sender) in
             
             do {
                 let commands = try self.processor.executableCommands(from: message)
